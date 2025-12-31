@@ -29,11 +29,17 @@ export function ExperiencesSection({
   disabled = false,
 }: ExperiencesSectionProps) {
   const [isAdding, setIsAdding] = useState(false)
-  const [newExperience, setNewExperience] = useState({
+  const [newExperience, setNewExperience] = useState<{
+    title: string
+    planned_date: string
+    type: 'travel' | 'event' | 'experience'
+    status: 'planning' | 'booked' | 'completed'
+    notes: string
+  }>({
     title: '',
     planned_date: '',
-    type: 'experience' as const,
-    status: 'planning' as const,
+    type: 'experience',
+    status: 'planning',
     notes: '',
   })
 
