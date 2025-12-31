@@ -35,11 +35,17 @@ export function PurchasesSection({
   disabled = false,
 }: PurchasesSectionProps) {
   const [isAdding, setIsAdding] = useState(false)
-  const [newPurchase, setNewPurchase] = useState({
+  const [newPurchase, setNewPurchase] = useState<{
+    item_name: string
+    category: 'purchase' | 'research'
+    priority: 'low' | 'medium' | 'high'
+    status: 'researching' | 'decided' | 'purchased' | 'dropped'
+    notes: string
+  }>({
     item_name: '',
-    category: 'purchase' as const,
-    priority: 'medium' as const,
-    status: 'researching' as const,
+    category: 'purchase',
+    priority: 'medium',
+    status: 'researching',
     notes: '',
   })
 

@@ -3,6 +3,7 @@ import {
   EntryListResponse,
   EntryResponse,
   WeeklyEntryWithItems,
+  WeeklyEntry,
   CreateEntryParams,
   UpdateEntryParams,
 } from '@/types/api'
@@ -12,7 +13,7 @@ const API_BASE = '/api/entries'
 /**
  * Get all weekly entries for the current user
  */
-export async function getAllEntries(): Promise<WeeklyEntryWithItems[]> {
+export async function getAllEntries(): Promise<WeeklyEntry[]> {
   const response = await fetch(API_BASE, {
     credentials: 'include',
   })

@@ -2,10 +2,10 @@
 
 import { useState, useMemo } from 'react'
 import { Calendar } from '@/components/ui'
-import type { WeeklyEntryWithItems } from '@/types/api'
+import type { WeeklyEntry } from '@/types/api'
 
 interface CalendarViewProps {
-  entries: WeeklyEntryWithItems[]
+  entries: WeeklyEntry[]
   onDateSelect?: (date: Date) => void
   selectedDate?: Date
   className?: string

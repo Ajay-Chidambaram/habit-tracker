@@ -6,7 +6,7 @@ import { WeeklyEntryForm } from '@/components/dashboard/WeeklyEntryForm'
 import { Card, CardHeader, CardBody } from '@/components/ui'
 import { Skeleton } from '@/components/ui'
 import { getAllEntries, getEntryById } from '@/lib/api/entries'
-import type { WeeklyEntryWithItems } from '@/types/api'
+import type { WeeklyEntryWithItems, WeeklyEntry } from '@/types/api'
 
 /**
  * Get the Monday of the week for a given date
@@ -52,7 +52,7 @@ function formatWeekRange(weekStart: Date): string {
 }
 
 export default function HistoryPage() {
-  const [entries, setEntries] = useState<WeeklyEntryWithItems[]>([])
+  const [entries, setEntries] = useState<WeeklyEntry[]>([])
   const [selectedEntry, setSelectedEntry] = useState<WeeklyEntryWithItems | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
   const [loading, setLoading] = useState(true)
@@ -99,14 +99,14 @@ export default function HistoryPage() {
         setSelectedEntry(fullEntry)
       } catch (err) {
         console.error('Error loading entry:', err)
-        setSelectedEntry(entry)
+        setSelectedEntry(null)
       }
     } else {
       setSelectedEntry(null)
     }
   }
 
-  const handleEntryClick = async (entry: WeeklyEntryWithItems) => {
+  const handleEntryClick = async (entry: WeeklyEntry) => {
     const weekStart = new Date(entry.week_start)
     setSelectedDate(weekStart)
 
@@ -115,7 +115,7 @@ export default function HistoryPage() {
       setSelectedEntry(fullEntry)
     } catch (err) {
       console.error('Error loading entry:', err)
-      setSelectedEntry(entry)
+      setSelectedEntry(null)
     }
   }
 
@@ -191,8 +191,7 @@ export default function HistoryPage() {
                           {formatWeekRange(weekStart)}
                         </div>
                         <div className="text-xs mt-1 opacity-80">
-                          {entry.habits.length} habits, {entry.side_projects.length}{' '}
-                          projects
+                          Week of {formatDate(weekStart)}
                         </div>
                       </button>
                     )

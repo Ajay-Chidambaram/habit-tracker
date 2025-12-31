@@ -23,10 +23,15 @@ export function ProjectsSection({
   disabled = false,
 }: ProjectsSectionProps) {
   const [isAdding, setIsAdding] = useState(false)
-  const [newProject, setNewProject] = useState({
+  const [newProject, setNewProject] = useState<{
+    name: string
+    goal: string
+    status: 'not_started' | 'in_progress' | 'completed'
+    notes: string
+  }>({
     name: '',
     goal: '',
-    status: 'not_started' as const,
+    status: 'not_started',
     notes: '',
   })
 
@@ -117,7 +122,7 @@ export function ProjectsSection({
                       </p>
                     ) : (
                       <Input
-                        value={project.goal}
+                        value={project.goal || ''}
                         onChange={(e) =>
                           handleUpdate(project.id, { goal: e.target.value })
                         }

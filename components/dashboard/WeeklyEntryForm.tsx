@@ -119,6 +119,23 @@ export function WeeklyEntryForm({
     JSON.stringify(purchases) !== JSON.stringify(entry.purchases_research || []) ||
     JSON.stringify(experiences) !== JSON.stringify(entry.experiences_travel || [])
 
+  // Wrapper functions to handle type conversion
+  const handleHabitsUpdate = (updatedHabits: (Omit<HabitInsert, 'entry_id'> | Habit)[]) => {
+    setHabits(updatedHabits as Habit[])
+  }
+
+  const handleProjectsUpdate = (updatedProjects: (Omit<SideProjectInsert, 'entry_id'> | SideProject)[]) => {
+    setProjects(updatedProjects as SideProject[])
+  }
+
+  const handlePurchasesUpdate = (updatedPurchases: (Omit<PurchaseResearchInsert, 'entry_id'> | PurchaseResearch)[]) => {
+    setPurchases(updatedPurchases as PurchaseResearch[])
+  }
+
+  const handleExperiencesUpdate = (updatedExperiences: (Omit<ExperienceTravelInsert, 'entry_id'> | ExperienceTravel)[]) => {
+    setExperiences(updatedExperiences as ExperienceTravel[])
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -136,7 +153,7 @@ export function WeeklyEntryForm({
           <Button
             onClick={handleSave}
             disabled={isSaving || !hasChanges}
-            loading={isSaving}
+            isLoading={isSaving}
           >
             {isSaving ? 'Saving...' : 'Save Changes'}
           </Button>
@@ -145,25 +162,25 @@ export function WeeklyEntryForm({
 
       <HabitsSection
         habits={habits}
-        onUpdate={setHabits}
+        onUpdate={handleHabitsUpdate}
         disabled={disabled}
       />
 
       <ProjectsSection
         projects={projects}
-        onUpdate={setProjects}
+        onUpdate={handleProjectsUpdate}
         disabled={disabled}
       />
 
       <PurchasesSection
         purchases={purchases}
-        onUpdate={setPurchases}
+        onUpdate={handlePurchasesUpdate}
         disabled={disabled}
       />
 
       <ExperiencesSection
         experiences={experiences}
-        onUpdate={setExperiences}
+        onUpdate={handleExperiencesUpdate}
         disabled={disabled}
       />
     </div>
