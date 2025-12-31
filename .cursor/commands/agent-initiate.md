@@ -1,1 +1,1 @@
-# Read /Users/chidambaramk/Work/Personal/habit-tracker/docs/IMPLEMENTATION_PLAN.md for your assigned task. Only modify files listed under your task. Update /Users/chidambaramk/Work/Personal/habit-tracker/docs/STATUS.md when done
+# Read /Users/chidambaramk/Work/Personal/habit-tracker/docs/IMPLEMENTATION_PLAN.md for your assigned task. Only modify files listed under your task. Update /Users/chidambaramk/Work/Personal/habit-tracker/docs/STATUS.md when done. Refer Supabase environment variables set in /Users/chidambaramk/Work/Personal/habit-tracker/.env
