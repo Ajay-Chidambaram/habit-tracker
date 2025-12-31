@@ -10,28 +10,80 @@ interface LoginButtonProps {
 
 export function LoginButton({ redirectTo = '/dashboard', className = '' }: LoginButtonProps) {
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
 
   const handleSignIn = async () => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/58d7e182-4b22-40ea-867c-1026a93d817b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/auth/LoginButton.tsx:16',message:'handleSignIn entry',data:{redirectTo},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     try {
       setLoading(true)
+      setError(null)
       const baseUrl = window.location.origin
       const callbackUrl = `${baseUrl}/auth/callback`
+      // Use just the callback URL without query params - we'll handle next in the callback
+      const redirectUrl = callbackUrl
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/58d7e182-4b22-40ea-867c-1026a93d817b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/auth/LoginButton.tsx:23',message:'Before OAuth call',data:{baseUrl,callbackUrl,redirectUrl,hasSupabaseUrl:!!process.env.NEXT_PUBLIC_SUPABASE_URL},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      console.log('[LOGIN_BUTTON] Initiating OAuth', { 
+        baseUrl, 
+        callbackUrl, 
+        redirectUrl,
+        redirectTo,
+        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...',
+        hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      })
 
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${callbackUrl}?next=${encodeURIComponent(redirectTo)}`,
+      const oauthOptions = {
+        redirectTo: redirectUrl,
+        queryParams: {
+          next: redirectTo, // This will be passed to our callback route
         },
+        scopes: 'email profile',
+      }
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/58d7e182-4b22-40ea-867c-1026a93d817b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/auth/LoginButton.tsx:40',message:'Calling signInWithOAuth',data:{provider:'google',options:oauthOptions},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: oauthOptions,
+      })
+      
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/58d7e182-4b22-40ea-867c-1026a93d817b',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'components/auth/LoginButton.tsx:45',message:'OAuth response received',data:{hasError:!!error,errorMessage:error?.message,errorStatus:error?.status,hasData:!!data,hasUrl:!!data?.url,urlPrefix:data?.url?.substring(0,100)},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
+      console.log('[LOGIN_BUTTON] OAuth response', { 
+        hasError: !!error, 
+        errorMessage: error?.message,
+        errorStatus: error?.status,
+        hasData: !!data,
+        url: data?.url?.substring(0, 100),
+        fullError: error ? JSON.stringify(error, Object.getOwnPropertyNames(error)) : null
       })
 
       if (error) {
-        console.error('Error signing in:', error)
+        console.error('[LOGIN_BUTTON] Error signing in:', { 
+          message: error.message, 
+          status: error.status,
+          name: error.name,
+          fullError: JSON.stringify(error, Object.getOwnPropertyNames(error))
+        })
+        setError(`Error: ${error.message}`)
         alert(`Error signing in: ${error.message}`)
+      } else if (data?.url) {
+        // OAuth flow initiated successfully - redirect will happen automatically
+        console.log('[LOGIN_BUTTON] Redirecting to OAuth provider', { url: data.url.substring(0, 150) })
+        window.location.href = data.url
       }
     } catch (error) {
-      console.error('Unexpected error:', error)
-      alert('An unexpected error occurred. Please try again.')
+      console.error('[LOGIN_BUTTON] Unexpected error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred'
+      setError(errorMessage)
+      alert(`An unexpected error occurred: ${errorMessage}`)
     } finally {
       setLoading(false)
     }
