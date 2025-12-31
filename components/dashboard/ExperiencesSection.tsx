@@ -303,7 +303,7 @@ export function ExperiencesSection({
 
           {experiences.length === 0 && !isAdding && (
             <p className="text-center text-[var(--muted-foreground)] py-8">
-              No experiences added yet. Click "Add Experience" to get started.
+              No experiences added yet. Click &quot;Add Experience&quot; to get started.
             </p>
           )}
         </div>

@@ -245,7 +245,7 @@ export function HabitsSection({
 
           {habits.length === 0 && !isAdding && (
             <p className="text-center text-[var(--muted-foreground)] py-8">
-              No habits added yet. Click "Add Habit" to get started.
+              No habits added yet. Click &quot;Add Habit&quot; to get started.
             </p>
           )}
         </div>

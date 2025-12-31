@@ -292,7 +292,7 @@ export function PurchasesSection({
 
           {purchases.length === 0 && !isAdding && (
             <p className="text-center text-[var(--muted-foreground)] py-8">
-              No items added yet. Click "Add Item" to get started.
+              No items added yet. Click &quot;Add Item&quot; to get started.
             </p>
           )}
         </div>

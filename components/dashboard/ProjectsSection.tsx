@@ -231,7 +231,7 @@ export function ProjectsSection({
 
           {projects.length === 0 && !isAdding && (
             <p className="text-center text-[var(--muted-foreground)] py-8">
-              No projects added yet. Click "Add Project" to get started.
+              No projects added yet. Click &quot;Add Project&quot; to get started.
             </p>
           )}
         </div>
