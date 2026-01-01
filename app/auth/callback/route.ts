@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { NextRequest } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 /**
  * OAuth callback route handler
  * Handles the redirect from Supabase after OAuth authentication
@@ -16,7 +18,7 @@ export async function GET(request: NextRequest) {
     const code = requestUrl.searchParams.get('code')
     const urlError = requestUrl.searchParams.get('error')
     const errorDescription = requestUrl.searchParams.get('error_description')
-    const next = requestUrl.searchParams.get('next') || '/dashboard'
+    const next = requestUrl.searchParams.get('next') || '/'
     console.log('[AUTH_CALLBACK] Parsed params', { 
       hasCode: !!code, 
       codeLength: code?.length, 

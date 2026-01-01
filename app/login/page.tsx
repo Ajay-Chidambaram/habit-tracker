@@ -10,10 +10,10 @@ export default async function LoginPage({
   // Redirect if already authenticated
   const user = await getServerUser()
   if (user) {
-    redirect('/dashboard')
+    redirect('/')
   }
 
-  const redirectTo = searchParams.redirectTo || '/dashboard'
+  const redirectTo = searchParams.redirectTo || '/'
   const error = searchParams.error
 
   return (
