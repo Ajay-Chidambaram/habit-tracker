@@ -1,111 +1,79 @@
-'use client';
+import * as React from "react"
+import { X } from "lucide-react"
+import { cn } from "@/lib/utils/cn"
+import { Button } from "./button"
 
-import React, { useEffect } from 'react';
-
-export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
-
-export interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title?: string;
-  children: React.ReactNode;
-  size?: ModalSize;
-  showCloseButton?: boolean;
-  className?: string;
+interface ModalProps extends React.HTMLAttributes<HTMLDivElement> {
+  isOpen: boolean
+  onClose: () => void
+  title?: string
+  description?: string
+  width?: string
 }
 
-export const Modal: React.FC<ModalProps> = ({
-  isOpen,
-  onClose,
-  title,
-  children,
-  size = 'md',
-  showCloseButton = true,
-  className = '',
-}) => {
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
+const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
+  ({ className, isOpen, onClose, title, description, width = "max-w-lg", children, ...props }, ref) => {
 
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
+    React.useEffect(() => {
+      if (isOpen) {
+        document.body.style.overflow = 'hidden'
+      } else {
+        document.body.style.overflow = 'unset'
       }
-    };
+      return () => {
+        document.body.style.overflow = 'unset'
+      }
+    }, [isOpen])
 
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
+    if (!isOpen) return null
 
-  if (!isOpen) return null;
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        {/* Backdrop */}
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+          onClick={onClose}
+        />
 
-  const sizeClasses = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-    full: 'max-w-full mx-4',
-  };
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
-    >
-      {/* Overlay */}
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
-      
-      {/* Modal Content */}
-      <div
-        className={`
-          relative z-50 bg-[var(--card)] border border-[var(--border)] rounded-lg shadow-xl
-          w-full ${sizeClasses[size]} ${className}
-          max-h-[90vh] overflow-y-auto
-        `}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        {(title || showCloseButton) && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
+        {/* Content */}
+        <div
+          ref={ref}
+          className={cn(
+            "relative z-50 w-full overflow-hidden rounded-lg bg-bg-elevated border border-border p-6 shadow-lg animate-in fade-in zoom-in-95 duration-200",
+            width,
+            className
+          )}
+          {...props}
+        >
+          <div className="flex flex-col space-y-1.5 text-center sm:text-left mb-4">
             {title && (
-              <h2 className="text-xl font-semibold text-[var(--foreground)]">{title}</h2>
+              <h3 className="text-lg font-semibold leading-none tracking-tight">
+                {title}
+              </h3>
             )}
-            {showCloseButton && (
-              <button
-                onClick={onClose}
-                className="p-1 hover:bg-[var(--accent)] rounded transition-colors text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
-                aria-label="Close modal"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+            {description && (
+              <p className="text-sm text-text-muted">
+                {description}
+              </p>
             )}
           </div>
-        )}
-        
-        {/* Body */}
-        <div className="px-6 py-4">{children}</div>
-      </div>
-    </div>
-  );
-};
 
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none"
+            onClick={onClose}
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </Button>
+
+          {children}
+        </div>
+      </div>
+    )
+  }
+)
+Modal.displayName = "Modal"
+
+export { Modal }

@@ -2,39 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --card: #1a1a1a;
-  --card-foreground: #ededed;
-  --border: #2a2a2a;
-  --input: #1a1a1a;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --secondary: #262626;
-  --secondary-foreground: #ededed;
-  --accent: #2a2a2a;
-  --accent-foreground: #ededed;
-  --muted: #1a1a1a;
-  --muted-foreground: #a3a3a3;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --info: #3b82f6;
+@layer base {
+  :root {
+    /* Background layers */
+    --bg-base: #0a0f14;
+    --bg-surface: #0f1419;
+    --bg-elevated: #151c24;
+    --bg-overlay: #1a232d;
+    
+    /* Text */
+    --text-primary: #f0f4f8;
+    --text-secondary: #8899a6;
+    --text-muted: #5b6c7a;
+    
+    /* Borders */
+    --border-default: #1e2a36;
+    --border-hover: #2a3a48;
+    
+    /* Accent colors */
+    --accent-green: #4ade80;
+    --accent-blue: #22d3ee;
+    --accent-purple: #a78bfa;
+    --accent-amber: #fbbf24;
+    --accent-rose: #fb7185;
+    --accent-orange: #fb923c;
+    
+    /* Status */
+    --success: #4ade80;
+    --warning: #fbbf24;
+    --error: #f87171;
+    --info: #22d3ee;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    --shadow-glow-green: 0 0 20px rgba(74, 222, 128, 0.15);
+    --shadow-glow-blue: 0 0 20px rgba(34, 211, 238, 0.15);
+    
+    /* Radius */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-full: 9999px;
+    
+    /* Transitions */
+    --transition-fast: 150ms ease;
+    --transition-normal: 250ms ease;
+    --transition-slow: 350ms ease;
+  }
 }
 
-* {
-  border-color: var(--border);
+@layer base {
+  body {
+    @apply bg-[var(--bg-base)] text-[var(--text-primary)] antialiased;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
 }
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-

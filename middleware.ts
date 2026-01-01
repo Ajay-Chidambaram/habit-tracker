@@ -3,6 +3,15 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 /**
  * Middleware to protect routes and refresh auth sessions
+ * 
+ * Protected routes (require auth):
+ * - / (dashboard home)
+ * - /habits, /goals, /learning, /bucket-list, /projects, /wishlist
+ * - /insights, /settings
+ * 
+ * Public routes:
+ * - /login
+ * - /auth/callback
  */
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
@@ -34,18 +43,22 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protect dashboard routes - redirect to login if not authenticated
-  if (request.nextUrl.pathname.startsWith('/dashboard')) {
-    if (!user) {
-      const redirectUrl = new URL('/login', request.url)
-      redirectUrl.searchParams.set('redirectTo', request.nextUrl.pathname)
-      return NextResponse.redirect(redirectUrl)
-    }
+  const pathname = request.nextUrl.pathname
+
+  // Public routes that don't require authentication
+  const publicRoutes = ['/login', '/auth/callback']
+  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
+
+  // Protected routes - all app routes except public ones
+  if (!isPublicRoute && !user) {
+    const redirectUrl = new URL('/login', request.url)
+    redirectUrl.searchParams.set('redirectTo', pathname)
+    return NextResponse.redirect(redirectUrl)
   }
 
   // Redirect authenticated users away from login page
-  if (request.nextUrl.pathname === '/login' && user) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+  if (pathname === '/login' && user) {
+    return NextResponse.redirect(new URL('/', request.url))
   }
 
   return response
@@ -58,9 +71,9 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - public folder
+     * - public folder assets
+     * - api routes (handled separately)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 }
-

@@ -1,36 +1,39 @@
-'use client';
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+import { cn } from "@/lib/utils/cn"
 
-import React from 'react';
+const badgeVariants = cva(
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  {
+    variants: {
+      variant: {
+        default:
+          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+        secondary:
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        destructive:
+          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+        outline: "text-foreground",
+        success: "border-transparent bg-status-success/20 text-status-success hover:bg-status-success/30",
+        warning: "border-transparent bg-status-warning/20 text-status-warning hover:bg-status-warning/30",
+        info: "border-transparent bg-status-info/20 text-status-info hover:bg-status-info/30",
+        error: "border-transparent bg-status-error/20 text-status-error hover:bg-status-error/30",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
 
-export type BadgeVariant = 'success' | 'warning' | 'error' | 'info' | 'default';
+export interface BadgeProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+  VariantProps<typeof badgeVariants> { }
 
-export interface BadgeProps {
-  children: React.ReactNode;
-  variant?: BadgeVariant;
-  className?: string;
+function Badge({ className, variant, ...props }: BadgeProps) {
+  return (
+    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+  )
 }
 
-export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
-  ({ children, variant = 'default', className = '' }, ref) => {
-    const baseStyles = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
-    
-    const variants = {
-      success: 'bg-green-500/20 text-green-400 border border-green-500/30',
-      warning: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
-      error: 'bg-red-500/20 text-red-400 border border-red-500/30',
-      info: 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
-      default: 'bg-[var(--secondary)] text-[var(--secondary-foreground)] border border-[var(--border)]',
-    };
-    
-    const combinedClassName = `${baseStyles} ${variants[variant]} ${className}`;
-    
-    return (
-      <span ref={ref} className={combinedClassName}>
-        {children}
-      </span>
-    );
-  }
-);
-
-Badge.displayName = 'Badge';
-
+export { Badge, badgeVariants }

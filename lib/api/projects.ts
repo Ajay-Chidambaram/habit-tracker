@@ -1,52 +1,49 @@
-import { SideProject, SideProjectInsert, SideProjectUpdate } from '@/types/api'
-import { getEntryById, updateEntry } from './entries'
 
-/**
- * Get all side projects for a specific entry
- */
-export async function getProjectsByEntryId(
-  entryId: string
-): Promise<SideProject[]> {
-  const entry = await getEntryById(entryId)
-  return entry.side_projects
+import {
+  Project,
+  CreateProjectInput,
+  UpdateProjectInput
+} from '@/types'
+
+const BASE_URL = '/api/projects'
+
+export const api = {
+  fetchProjects: async (): Promise<Project[]> => {
+    const res = await fetch(BASE_URL)
+    if (!res.ok) throw new Error('Failed to fetch projects')
+    return res.json()
+  },
+
+  fetchProject: async (id: string): Promise<Project> => {
+    const res = await fetch(`${BASE_URL}/${id}`)
+    if (!res.ok) throw new Error('Failed to fetch project')
+    return res.json()
+  },
+
+  createProject: async (data: CreateProjectInput): Promise<Project> => {
+    const res = await fetch(BASE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) throw new Error('Failed to create project')
+    return res.json()
+  },
+
+  updateProject: async (id: string, data: UpdateProjectInput): Promise<Project> => {
+    const res = await fetch(`${BASE_URL}/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) throw new Error('Failed to update project')
+    return res.json()
+  },
+
+  deleteProject: async (id: string): Promise<void> => {
+    const res = await fetch(`${BASE_URL}/${id}`, {
+      method: 'DELETE',
+    })
+    if (!res.ok) throw new Error('Failed to delete project')
+  }
 }
-
-/**
- * Update side projects for a specific entry
- * This replaces all projects for the entry with the provided array
- */
-export async function updateProjectsForEntry(
-  entryId: string,
-  projects: (SideProjectInsert | SideProjectUpdate)[]
-): Promise<SideProject[]> {
-  const entry = await updateEntry({
-    id: entryId,
-    side_projects: projects,
-  })
-  return entry.side_projects
-}
-
-/**
- * Add a new project to an entry
- */
-export async function addProjectToEntry(
-  entryId: string,
-  project: SideProjectInsert
-): Promise<SideProject[]> {
-  const entry = await getEntryById(entryId)
-  const updatedProjects = [...entry.side_projects, project]
-  return updateProjectsForEntry(entryId, updatedProjects)
-}
-
-/**
- * Remove a project from an entry
- */
-export async function removeProjectFromEntry(
-  entryId: string,
-  projectId: string
-): Promise<SideProject[]> {
-  const entry = await getEntryById(entryId)
-  const updatedProjects = entry.side_projects.filter((p) => p.id !== projectId)
-  return updateProjectsForEntry(entryId, updatedProjects)
-}
-
