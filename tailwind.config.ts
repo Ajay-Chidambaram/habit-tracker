@@ -9,7 +9,46 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Base structure
+        border: "var(--border-default)",
+        input: "var(--border-default)",
+        ring: "var(--accent-green)",
+        background: "var(--bg-base)",
+        foreground: "var(--text-primary)",
+        primary: {
+          DEFAULT: "var(--accent-green)",
+          foreground: "var(--bg-base)",
+        },
+        secondary: {
+          DEFAULT: "var(--bg-surface)",
+          foreground: "var(--text-primary)",
+        },
+        destructive: {
+          DEFAULT: "var(--error)",
+          foreground: "var(--text-primary)",
+        },
+        muted: {
+          DEFAULT: "var(--bg-elevated)",
+          foreground: "var(--text-muted)",
+        },
+        accent: {
+          DEFAULT: "var(--bg-overlay)",
+          foreground: "var(--text-primary)",
+          green: "var(--accent-green)",
+          blue: "var(--accent-blue)",
+          purple: "var(--accent-purple)",
+          amber: "var(--accent-amber)",
+          rose: "var(--accent-rose)",
+          orange: "var(--accent-orange)",
+        },
+        popover: {
+          DEFAULT: "var(--bg-surface)",
+          foreground: "var(--text-primary)",
+        },
+        card: {
+          DEFAULT: "var(--bg-surface)",
+          foreground: "var(--text-primary)",
+        },
+        // Legacy/Custom structure (keeping for compatibility)
         bg: {
           base: "var(--bg-base)",
           surface: "var(--bg-surface)",
@@ -20,19 +59,6 @@ const config: Config = {
           primary: "var(--text-primary)",
           secondary: "var(--text-secondary)",
           muted: "var(--text-muted)",
-        },
-        border: {
-          DEFAULT: "var(--border-default)",
-          hover: "var(--border-hover)",
-        },
-        // Brand/Accent
-        accent: {
-          green: "var(--accent-green)",
-          blue: "var(--accent-blue)",
-          purple: "var(--accent-purple)",
-          amber: "var(--accent-amber)",
-          rose: "var(--accent-rose)",
-          orange: "var(--accent-orange)",
         },
         // Functional
         status: {
