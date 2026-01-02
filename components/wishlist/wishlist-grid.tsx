@@ -70,7 +70,7 @@ export function WishlistGrid({ items, loading, onDelete, onEdit, onStatusChange 
           </div>
           <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-lg border border-primary/20 text-primary whitespace-nowrap">
             <ShoppingBag className="w-4 h-4" />
-            <span className="text-sm font-bold">${totalPrice.toLocaleString()}</span>
+            <span className="text-sm font-bold">₹ {totalPrice.toLocaleString()}</span>
           </div>
         </div>
       </div>

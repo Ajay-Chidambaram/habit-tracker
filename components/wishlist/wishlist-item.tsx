@@ -53,7 +53,7 @@ export function WishlistItemCard({ item, onDelete, onEdit, onStatusChange }: Wis
           </h3>
           {item.price && (
             <p className="text-sm font-semibold text-primary mt-0.5">
-              ${item.price.toLocaleString()}
+              ₹ {item.price.toLocaleString()}
             </p>
           )}
         </div>
