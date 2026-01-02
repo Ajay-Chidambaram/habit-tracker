@@ -1,7 +1,6 @@
 
 'use client'
 
-import { PageHeader } from "@/components/layout/page-header"
 import { TodayHabits } from "@/components/dashboard/today-habits"
 import { ActiveGoals } from "@/components/dashboard/active-goals"
 import { LearningSummary } from "@/components/dashboard/learning-summary"
@@ -14,7 +13,9 @@ import { HabitWithCompletions } from "@/types"
 export default function DashboardPage() {
   const today = new Date()
   const formattedDate = format(today, 'EEEE, MMMM do')
-  const { habits } = useHabits()
+
+  // Single hook call - data passed down to children
+  const { habits, loading: habitsLoading, toggleHabit } = useHabits()
 
   const pendingHabits = habits.filter((h: HabitWithCompletions) => {
     if (h.is_archived || h.is_completed_today) return false
@@ -46,13 +47,13 @@ export default function DashboardPage() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Row 1 */}
         <div className="lg:col-span-1">
-          <StreakSummary />
+          <StreakSummary habits={habits} loading={habitsLoading} />
         </div>
         <div className="lg:col-span-1">
-          <TodayHabits />
+          <TodayHabits habits={habits} loading={habitsLoading} toggleHabit={toggleHabit} />
         </div>
         <div className="lg:col-span-1">
-          <WeeklyProgress />
+          <WeeklyProgress habits={habits} loading={habitsLoading} />
         </div>
 
         {/* Row 2 */}

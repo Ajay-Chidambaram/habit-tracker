@@ -1,7 +1,6 @@
 
 'use client'
 
-import { useHabits } from '@/lib/hooks/use-habits'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Check, Flame } from 'lucide-react'
@@ -10,8 +9,13 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { toISODate } from '@/lib/utils/dates'
 import { HabitWithCompletions } from '@/types'
 
-export function TodayHabits() {
-  const { habits, loading, toggleHabit } = useHabits()
+interface TodayHabitsProps {
+  habits: HabitWithCompletions[]
+  loading: boolean
+  toggleHabit: (habitId: string, date: string, isCompleted: boolean) => void
+}
+
+export function TodayHabits({ habits, loading, toggleHabit }: TodayHabitsProps) {
   const today = toISODate(new Date())
 
   const isHabitDueToday = (habit: HabitWithCompletions) => {

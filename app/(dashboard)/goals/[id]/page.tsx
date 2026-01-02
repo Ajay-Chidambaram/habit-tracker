@@ -1,12 +1,11 @@
-
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { PageHeader } from '@/components/layout/page-header'
 import { GoalForm } from '@/components/goals/goal-form'
 import { MilestoneList } from '@/components/goals/milestone-list'
 import { GoalProgressRing } from '@/components/goals/goal-progress-ring'
 import { api } from '@/lib/api/goals'
-import { GoalWithMilestones, CreateGoalInput, GoalMilestone } from '@/types'
+import { CreateGoalInput } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Edit, Trash, ArrowLeft, Target, CalendarDays, Flag } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -16,44 +15,13 @@ import { useToast } from '@/lib/hooks/use-toast'
 import { format, parseISO } from 'date-fns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils/cn'
+import { useGoal } from '@/lib/hooks/use-goal'
 
 export default function GoalDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const { toast } = useToast()
-  const [goal, setGoal] = useState<GoalWithMilestones | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { goal, loading, refresh } = useGoal(params.id)
   const [isEditing, setIsEditing] = useState(false)
-
-  const fetchGoal = useCallback(async () => {
-    try {
-      setLoading(true)
-      const data = await api.fetchGoal(params.id)
-
-      // Calculate progress
-      const milestones = data.milestones || []
-      const completed = milestones.filter(m => m.is_completed).length
-      // Sort milestones: incomplete first, then by order/creation
-      const sortedMilestones = [...milestones].sort((a, b) => {
-        if (a.is_completed === b.is_completed) return 0
-        return a.is_completed ? 1 : -1
-      })
-
-      const progress = milestones.length > 0
-        ? Math.round((completed / milestones.length) * 100)
-        : 0
-
-      setGoal({ ...data, milestones: sortedMilestones, progress_percent: progress })
-    } catch (err) {
-      console.error(err)
-      toast({ title: 'Error fetching goal', variant: 'destructive' })
-    } finally {
-      setLoading(false)
-    }
-  }, [params.id, toast])
-
-  useEffect(() => {
-    fetchGoal()
-  }, [fetchGoal])
 
   // UPDATE Goal
   const handleUpdate = async (data: CreateGoalInput) => {
@@ -61,7 +29,7 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
       if (!goal) return false
       await api.updateGoal(goal.id, data)
       toast({ title: 'Goal updated successfully' })
-      fetchGoal()
+      refresh()
       return true
     } catch (err) {
       toast({ title: 'Error updating goal', variant: 'destructive' })
@@ -87,8 +55,7 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
     try {
       if (!goal) return
       await api.createMilestone(goal.id, { title })
-      // Optimistic or refresh
-      fetchGoal()
+      refresh()
       toast({ title: 'Milestone added' })
     } catch (err) {
       toast({ title: 'Error adding milestone', variant: 'destructive' })
@@ -97,44 +64,21 @@ export default function GoalDetailPage({ params }: { params: { id: string } }) {
 
   const handleToggleMilestone = async (id: string, isCompleted: boolean) => {
     try {
-      // Optimistic update local state first for responsiveness
-      if (goal) {
-        const updatedMilestones = goal.milestones.map(m =>
-          m.id === id ? { ...m, is_completed: isCompleted } : m
-        )
-        const completed = updatedMilestones.filter(m => m.is_completed).length
-        const progress = updatedMilestones.length > 0
-          ? Math.round((completed / updatedMilestones.length) * 100)
-          : 0
-
-        // Simple re-sort to keep completed at bottom if we want, but let's just update in place for now 
-        // to avoid UI jumping around under the cursor
-        setGoal({ ...goal, milestones: updatedMilestones, progress_percent: progress })
-      }
-
       await api.updateMilestone(id, { is_completed: isCompleted })
+      refresh()
     } catch (err) {
       toast({ title: 'Error updating milestone', variant: 'destructive' })
-      fetchGoal() // Revert
+      refresh() // Revert
     }
   }
 
   const handleDeleteMilestone = async (id: string) => {
     try {
-      // Optimistic
-      if (goal) {
-        const updatedMilestones = goal.milestones.filter(m => m.id !== id)
-        const completed = updatedMilestones.filter(m => m.is_completed).length
-        const progress = updatedMilestones.length > 0
-          ? Math.round((completed / updatedMilestones.length) * 100)
-          : 0
-        setGoal({ ...goal, milestones: updatedMilestones, progress_percent: progress })
-      }
-
       await api.deleteMilestone(id)
+      refresh()
     } catch (err) {
       toast({ title: 'Error deleting milestone', variant: 'destructive' })
-      fetchGoal()
+      refresh()
     }
   }
 

@@ -1,50 +1,44 @@
+'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { GoalWithMilestones, CreateGoalInput, UpdateGoalInput, CreateMilestoneInput, GoalMilestone } from '@/types'
+import useSWR from 'swr'
+import { GoalWithMilestones, CreateGoalInput, UpdateGoalInput, GoalMilestone } from '@/types'
 import { api } from '@/lib/api/goals'
 import { useToast } from '@/lib/hooks/use-toast'
 
+const GOALS_KEY = '/api/goals'
+
+function calculateProgress(milestones: GoalMilestone[]): number {
+  if (!milestones || milestones.length === 0) return 0
+  const completed = milestones.filter(m => m.is_completed).length
+  return Math.round((completed / milestones.length) * 100)
+}
+
+function processGoals(data: GoalWithMilestones[]): GoalWithMilestones[] {
+  return data.map(goal => ({
+    ...goal,
+    milestones: goal.milestones || [],
+    progress_percent: calculateProgress(goal.milestones || [])
+  }))
+}
+
 export function useGoals() {
-  const [goals, setGoals] = useState<GoalWithMilestones[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
   const { toast } = useToast()
 
-  const calculateProgress = (milestones: GoalMilestone[]): number => {
-    if (!milestones || milestones.length === 0) return 0
-    const completed = milestones.filter(m => m.is_completed).length
-    return Math.round((completed / milestones.length) * 100)
-  }
-
-  const fetchGoals = useCallback(async () => {
-    try {
-      setLoading(true)
-      const data = await api.fetchGoals()
-
-      const processed = data.map(goal => ({
-        ...goal,
-        milestones: goal.milestones || [],
-        progress_percent: calculateProgress(goal.milestones || [])
-      }))
-
-      setGoals(processed)
-    } catch (err) {
-      console.error(err)
-      setError(err as Error)
-    } finally {
-      setLoading(false)
+  const { data, error, isLoading, mutate } = useSWR<GoalWithMilestones[]>(
+    GOALS_KEY,
+    async () => {
+      const rawData = await api.fetchGoals()
+      return processGoals(rawData)
     }
-  }, [])
+  )
 
-  useEffect(() => {
-    fetchGoals()
-  }, [fetchGoals])
+  const goals = data || []
 
   const addGoal = async (input: CreateGoalInput) => {
     try {
       await api.createGoal(input)
       toast({ title: 'Goal created successfully' })
-      fetchGoals()
+      mutate()
       return true
     } catch (err) {
       toast({ title: 'Error creating goal', variant: 'destructive' })
@@ -56,7 +50,7 @@ export function useGoals() {
     try {
       await api.updateGoal(id, input)
       toast({ title: 'Goal updated successfully' })
-      fetchGoals()
+      mutate()
       return true
     } catch (err) {
       toast({ title: 'Error updating goal', variant: 'destructive' })
@@ -66,26 +60,24 @@ export function useGoals() {
 
   const deleteGoal = async (id: string) => {
     try {
+      mutate(goals.filter(g => g.id !== id), false)
       await api.deleteGoal(id)
       toast({ title: 'Goal deleted' })
-      setGoals(prev => prev.filter(g => g.id !== id))
       return true
     } catch (err) {
       toast({ title: 'Error deleting goal', variant: 'destructive' })
+      mutate()
       return false
     }
   }
 
-  // Milestone operations
-  // We can also have useGoal(id) hook, but for now we put everything here or in page components
-
   return {
     goals,
-    loading,
+    loading: isLoading,
     error,
     addGoal,
     updateGoal,
     deleteGoal,
-    refresh: fetchGoals
+    refresh: mutate
   }
 }

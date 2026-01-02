@@ -1,56 +1,50 @@
+'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import useSWR from 'swr'
 import { HabitWithCompletions, CreateHabitInput, UpdateHabitInput } from '@/types'
 import { api } from '@/lib/api/habits'
 import { useToast } from '@/lib/hooks/use-toast'
 import { calculateStreak } from '@/lib/utils/streaks'
 import { isSameDay } from 'date-fns'
 
+// Cache key
+const HABITS_KEY = '/api/habits'
+
+// Transform function to process raw data
+function processHabits(data: HabitWithCompletions[]): HabitWithCompletions[] {
+  return data.map(habit => {
+    const completions = habit.completions || []
+    const streak = calculateStreak(completions)
+    const isCompletedToday = completions.some(c =>
+      isSameDay(new Date(c.completed_date), new Date())
+    )
+    return {
+      ...habit,
+      completions,
+      current_streak: streak,
+      is_completed_today: isCompletedToday
+    }
+  })
+}
+
 export function useHabits() {
-  const [habits, setHabits] = useState<HabitWithCompletions[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
   const { toast } = useToast()
 
-  const fetchHabits = useCallback(async () => {
-    try {
-      setLoading(true)
-      const data = await api.fetchHabits()
-
-      const processed = data.map(habit => {
-        // Ensure completions is an array
-        const completions = habit.completions || []
-
-        const streak = calculateStreak(completions)
-        const isCompletedToday = completions.some(c =>
-          isSameDay(new Date(c.completed_date), new Date())
-        )
-        return {
-          ...habit,
-          completions,
-          current_streak: streak,
-          is_completed_today: isCompletedToday
-        }
-      })
-
-      setHabits(processed)
-    } catch (err) {
-      console.error(err)
-      setError(err as Error)
-    } finally {
-      setLoading(false)
+  const { data, error, isLoading, mutate } = useSWR<HabitWithCompletions[]>(
+    HABITS_KEY,
+    async () => {
+      const rawData = await api.fetchHabits()
+      return processHabits(rawData)
     }
-  }, [])
+  )
 
-  useEffect(() => {
-    fetchHabits()
-  }, [fetchHabits])
+  const habits = data || []
 
   const addHabit = async (input: CreateHabitInput) => {
     try {
       await api.createHabit(input)
       toast({ title: 'Habit created successfully' })
-      fetchHabits()
+      mutate() // Revalidate cache
       return true
     } catch (err) {
       toast({ title: 'Error creating habit', variant: 'destructive' })
@@ -62,7 +56,7 @@ export function useHabits() {
     try {
       await api.updateHabit(id, input)
       toast({ title: 'Habit updated successfully' })
-      fetchHabits()
+      mutate()
       return true
     } catch (err) {
       toast({ title: 'Error updating habit', variant: 'destructive' })
@@ -72,48 +66,49 @@ export function useHabits() {
 
   const deleteHabit = async (id: string) => {
     try {
+      // Optimistic update
+      mutate(habits.filter(h => h.id !== id), false)
       await api.deleteHabit(id)
       toast({ title: 'Habit deleted' })
-      setHabits(prev => prev.filter(h => h.id !== id))
       return true
     } catch (err) {
       toast({ title: 'Error deleting habit', variant: 'destructive' })
+      mutate() // Revert on error
       return false
     }
   }
 
   const toggleHabit = async (habitId: string, date: string, isCompleted: boolean) => {
+    const habit = habits.find(h => h.id === habitId)
+    if (!habit) return
+
     // Optimistic update
-    setHabits(prev => prev.map(h => {
-      if (h.id === habitId) {
-        // Remove existing completion for date if any, then add new one if isCompleted
-        // Note: completion dates are unique per habit
-        const otherCompletions = h.completions.filter(c => c.completed_date !== date)
+    const optimisticHabits = habits.map(h => {
+      if (h.id !== habitId) return h
 
-        const newCompletions = isCompleted
-          ? [...otherCompletions, {
-            id: 'temp-' + Date.now(),
-            habit_id: habitId,
-            completed_date: date,
-            created_at: new Date().toISOString(),
-            duration_minutes: null,
-            notes: null
-          }]
-          : otherCompletions
+      const otherCompletions = h.completions.filter(c => c.completed_date !== date)
+      const newCompletions = isCompleted
+        ? [...otherCompletions, {
+          id: 'temp-' + Date.now(),
+          habit_id: habitId,
+          completed_date: date,
+          created_at: new Date().toISOString(),
+          duration_minutes: null,
+          notes: null
+        }]
+        : otherCompletions
 
-        const streak = calculateStreak(newCompletions)
-        const isCompletedToday = newCompletions.some(c =>
+      return {
+        ...h,
+        completions: newCompletions,
+        current_streak: calculateStreak(newCompletions),
+        is_completed_today: newCompletions.some(c =>
           isSameDay(new Date(c.completed_date), new Date())
         )
-        return {
-          ...h,
-          completions: newCompletions,
-          current_streak: streak,
-          is_completed_today: isCompletedToday
-        }
       }
-      return h
-    }))
+    })
+
+    mutate(optimisticHabits, false) // Update cache immediately, don't revalidate yet
 
     try {
       if (isCompleted) {
@@ -121,22 +116,21 @@ export function useHabits() {
       } else {
         await api.uncompleteHabit(habitId, date)
       }
+      mutate() // Revalidate to get server state
     } catch (err) {
-      // Revert on error
-      console.error(err)
       toast({ title: 'Error updating status', variant: 'destructive' })
-      fetchHabits()
+      mutate() // Revert on error
     }
   }
 
   return {
     habits,
-    loading,
+    loading: isLoading,
     error,
     addHabit,
     updateHabit,
     deleteHabit,
     toggleHabit,
-    refresh: fetchHabits
+    refresh: mutate
   }
 }

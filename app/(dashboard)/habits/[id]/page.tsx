@@ -1,53 +1,31 @@
-
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { PageHeader } from '@/components/layout/page-header'
 import { HabitHeatmap } from '@/components/habits/habit-heatmap'
 import { HabitStats } from '@/components/habits/habit-stats'
 import { HabitForm } from '@/components/habits/habit-form'
 import { api } from '@/lib/api/habits'
-import { HabitWithCompletions, CreateHabitInput } from '@/types'
+import { CreateHabitInput } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Edit, Trash, ArrowLeft, History } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { calculateStreak } from '@/lib/utils/streaks'
 import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
 import { useToast } from '@/lib/hooks/use-toast'
+import { useHabit } from '@/lib/hooks/use-habit'
 
 export default function HabitDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const { toast } = useToast()
-  const [habit, setHabit] = useState<HabitWithCompletions | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { habit, loading, refresh } = useHabit(params.id)
   const [isEditing, setIsEditing] = useState(false)
-
-  const fetchHabit = useCallback(async () => {
-    try {
-      setLoading(true)
-      const data = await api.fetchHabit(params.id)
-
-      // Calculate streak
-      const streak = calculateStreak(data.completions)
-      setHabit({ ...data, current_streak: streak })
-    } catch (err) {
-      console.error(err)
-      toast({ title: 'Error fetching habit', variant: 'destructive' })
-    } finally {
-      setLoading(false)
-    }
-  }, [params.id, toast])
-
-  useEffect(() => {
-    fetchHabit()
-  }, [fetchHabit])
 
   const handleUpdate = async (data: CreateHabitInput) => {
     try {
       if (!habit) return false
       await api.updateHabit(habit.id, data)
       toast({ title: 'Habit updated successfully' })
-      fetchHabit()
+      refresh()
       return true
     } catch (err) {
       toast({ title: 'Error updating habit', variant: 'destructive' })

@@ -1,13 +1,17 @@
 
 'use client'
 
-import { useHabits } from '@/lib/hooks/use-habits'
 import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { format, subDays, isSameDay, startOfDay } from 'date-fns'
+import { HabitWithCompletions } from '@/types'
 
-export function WeeklyProgress() {
-  const { habits, loading } = useHabits()
+interface WeeklyProgressProps {
+  habits: HabitWithCompletions[]
+  loading: boolean
+}
+
+export function WeeklyProgress({ habits, loading }: WeeklyProgressProps) {
 
   if (loading) {
     return (

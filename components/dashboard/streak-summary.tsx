@@ -1,15 +1,19 @@
 
 'use client'
 
-import { useHabits } from '@/lib/hooks/use-habits'
 import { Card } from '@/components/ui/card'
 import { Flame, Calendar, TrendingUp } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils/cn'
-import { isSameDay, startOfWeek, addDays, format, isAfter, isBefore, endOfDay } from 'date-fns'
+import { isSameDay, startOfWeek, addDays, format, isAfter, endOfDay } from 'date-fns'
+import { HabitWithCompletions } from '@/types'
 
-export function StreakSummary() {
-  const { habits, loading } = useHabits()
+interface StreakSummaryProps {
+  habits: HabitWithCompletions[]
+  loading: boolean
+}
+
+export function StreakSummary({ habits, loading }: StreakSummaryProps) {
 
   if (loading) {
     return (

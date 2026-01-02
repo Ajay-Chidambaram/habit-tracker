@@ -1,14 +1,13 @@
-
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { PageHeader } from '@/components/layout/page-header'
 import { LearningForm } from '@/components/learning/learning-form'
 import { SessionLog } from '@/components/learning/session-log'
 import { ProgressChart } from '@/components/learning/progress-chart'
 import { api } from '@/lib/api/learning'
-import { LearningItemWithSessions, CreateLearningInput, CreateSessionInput } from '@/types'
+import { CreateLearningInput, CreateSessionInput } from '@/types'
 import { Button } from '@/components/ui/button'
-import { Edit, Trash, ArrowLeft, ExternalLink, Timer, BookOpen } from 'lucide-react'
+import { Edit, Trash, ArrowLeft, ExternalLink, Timer } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Skeleton } from '@/components/ui/skeleton'
 import Link from 'next/link'
@@ -17,42 +16,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ProgressBar } from '@/components/ui/progress-bar'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils/cn'
+import { useLearningItem } from '@/lib/hooks/use-learning-item'
 
 export default function LearningDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const { toast } = useToast()
-  const [item, setItem] = useState<LearningItemWithSessions | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { item, loading, refresh } = useLearningItem(params.id)
   const [isEditing, setIsEditing] = useState(false)
-
-  const fetchItem = useCallback(async () => {
-    try {
-      setLoading(true)
-      const data = await api.fetchLearningItem(params.id)
-
-      const progress = data.total_units > 0
-        ? Math.min(100, Math.round((data.completed_units / data.total_units) * 100))
-        : 0
-
-      setItem({ ...data, progress_percent: progress })
-    } catch (err) {
-      console.error(err)
-      toast({ title: 'Error fetching item', variant: 'destructive' })
-    } finally {
-      setLoading(false)
-    }
-  }, [params.id, toast])
-
-  useEffect(() => {
-    fetchItem()
-  }, [fetchItem])
 
   const handleUpdate = async (data: CreateLearningInput) => {
     try {
       if (!item) return false
       await api.updateLearningItem(item.id, data)
       toast({ title: 'Item updated successfully' })
-      fetchItem()
+      refresh()
       return true
     } catch (err) {
       toast({ title: 'Error updating item', variant: 'destructive' })
@@ -77,7 +54,7 @@ export default function LearningDetailPage({ params }: { params: { id: string } 
       if (!item) return
       await api.logSession(item.id, data)
       toast({ title: 'Session logged' })
-      fetchItem()
+      refresh()
     } catch (err) {
       toast({ title: 'Error logging session', variant: 'destructive' })
     }
@@ -87,7 +64,7 @@ export default function LearningDetailPage({ params }: { params: { id: string } 
     try {
       if (!item) return
       await api.updateLearningItem(item.id, { status: newStatus })
-      fetchItem()
+      refresh()
     } catch (err) {
       toast({ title: 'Error updating status', variant: 'destructive' })
     }

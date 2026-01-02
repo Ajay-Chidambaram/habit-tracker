@@ -1,47 +1,38 @@
+'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { LearningItemWithSessions, CreateLearningInput, UpdateLearningInput, CreateSessionInput } from '@/types'
+import useSWR from 'swr'
+import { LearningItemWithSessions, CreateLearningInput, UpdateLearningInput } from '@/types'
 import { api } from '@/lib/api/learning'
 import { useToast } from '@/lib/hooks/use-toast'
 
+const LEARNING_KEY = '/api/learning'
+
+function processLearningItems(data: LearningItemWithSessions[]): LearningItemWithSessions[] {
+  return data.map(item => ({
+    ...item,
+    sessions: [],
+    progress_percent: Math.min(100, Math.round((item.completed_units / item.total_units) * 100))
+  }))
+}
+
 export function useLearning() {
-  const [items, setItems] = useState<LearningItemWithSessions[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
   const { toast } = useToast()
 
-  const fetchItems = useCallback(async () => {
-    try {
-      setLoading(true)
-      const data = await api.fetchLearningItems()
-      // Note: fetchLearningItems returns LearningItem[], but we might want sessions or progress calc.
-      // API currently returns LearningItem[] without sessions list on the list endpoint (to save bandwidth).
-      // But we map it to LearningItemWithSessions type (sessions empty) locally.
-
-      const processed = data.map(item => ({
-        ...item,
-        sessions: [],
-        progress_percent: Math.min(100, Math.round((item.completed_units / item.total_units) * 100))
-      }))
-
-      setItems(processed)
-    } catch (err) {
-      console.error(err)
-      setError(err as Error)
-    } finally {
-      setLoading(false)
+  const { data, error, isLoading, mutate } = useSWR<LearningItemWithSessions[]>(
+    LEARNING_KEY,
+    async () => {
+      const rawData = await api.fetchLearningItems()
+      return processLearningItems(rawData)
     }
-  }, [])
+  )
 
-  useEffect(() => {
-    fetchItems()
-  }, [fetchItems])
+  const items = data || []
 
   const addItem = async (input: CreateLearningInput) => {
     try {
       await api.createLearningItem(input)
       toast({ title: 'Learning item created' })
-      fetchItems()
+      mutate()
       return true
     } catch (err) {
       toast({ title: 'Error creating item', variant: 'destructive' })
@@ -53,7 +44,7 @@ export function useLearning() {
     try {
       await api.updateLearningItem(id, input)
       toast({ title: 'Item updated' })
-      fetchItems()
+      mutate()
       return true
     } catch (err) {
       toast({ title: 'Error updating item', variant: 'destructive' })
@@ -63,23 +54,24 @@ export function useLearning() {
 
   const deleteItem = async (id: string) => {
     try {
+      mutate(items.filter(i => i.id !== id), false)
       await api.deleteLearningItem(id)
       toast({ title: 'Item deleted' })
-      setItems(prev => prev.filter(i => i.id !== id))
       return true
     } catch (err) {
       toast({ title: 'Error deleting item', variant: 'destructive' })
+      mutate()
       return false
     }
   }
 
   return {
     items,
-    loading,
+    loading: isLoading,
     error,
     addItem,
     updateItem,
     deleteItem,
-    refresh: fetchItems
+    refresh: mutate
   }
 }
