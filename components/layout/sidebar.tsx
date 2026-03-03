@@ -12,7 +12,9 @@ import {
   ShoppingBag,
   BarChart2,
   Settings,
-  LogOut
+  LogOut,
+  Zap,
+  ClipboardList
 } from "lucide-react"
 
 import { cn } from "@/lib/utils/cn"
@@ -31,8 +33,11 @@ const navItems = [
 
 const secondaryItems = [
   { name: 'Insights', href: '/insights', icon: BarChart2 },
+  { name: 'Weekly Review', href: '/weekly-review', icon: ClipboardList },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
+
+const isSunday = new Date().getDay() === 0
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -72,10 +77,25 @@ export function Sidebar() {
           )
         })}
 
+        {/* Focus Mode link */}
+        <Link
+          href="/today"
+          className={cn(
+            "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors",
+            pathname === '/today'
+              ? "bg-blue-500/10 text-blue-400"
+              : "text-blue-400 hover:bg-blue-500/10"
+          )}
+        >
+          <Zap className="h-4 w-4" />
+          Focus Mode
+        </Link>
+
         <div className="my-4 border-t border-border/50 mx-2" />
 
         {secondaryItems.map((item) => {
           const isActive = pathname === item.href
+          const showDot = item.href === '/weekly-review' && isSunday
 
           return (
             <Link
@@ -90,6 +110,9 @@ export function Sidebar() {
             >
               <item.icon className="h-4 w-4" />
               {item.name}
+              {showDot && (
+                <span className="ml-auto h-2 w-2 rounded-full bg-accent-green" />
+              )}
             </Link>
           )
         })}

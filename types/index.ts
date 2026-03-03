@@ -287,3 +287,23 @@ export interface CreateWishlistInput {
 export interface UpdateWishlistInput extends Partial<CreateWishlistInput> {
   status?: WishlistStatus
 }
+
+export interface WeeklyReview {
+  id: string
+  user_id: string
+  week_start: string
+  what_went_well: string
+  what_to_improve: string
+  next_week_intention: string
+  week_rating: number | null
+  created_at: string
+  updated_at: string
+}
+
+export interface SaveWeeklyReviewInput {
+  week_start: string
+  what_went_well: string
+  what_to_improve: string
+  next_week_intention: string
+  week_rating: number | null
+}

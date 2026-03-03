@@ -12,7 +12,9 @@ import {
   Folder,
   ShoppingBag,
   BarChart2,
-  Settings
+  Settings,
+  Zap,
+  ClipboardList
 } from "lucide-react"
 
 import { cn } from "@/lib/utils/cn"
@@ -26,11 +28,13 @@ import {
 const mainNavItems = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Habits', href: '/habits', icon: Activity },
+  { name: 'Focus', href: '/today', icon: Zap },
   { name: 'Goals', href: '/goals', icon: Target },
-  { name: 'Learn', href: '/learning', icon: BookOpen },
 ]
 
 const moreNavItems = [
+  { name: 'Learn', href: '/learning', icon: BookOpen },
+  { name: 'Review', href: '/weekly-review', icon: ClipboardList },
   { name: 'Bucket List', href: '/bucket-list', icon: Star },
   { name: 'Projects', href: '/projects', icon: Folder },
   { name: 'Wishlist', href: '/wishlist', icon: ShoppingBag },

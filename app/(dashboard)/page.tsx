@@ -1,6 +1,8 @@
 
 'use client'
 
+import Link from "next/link"
+import { Zap } from "lucide-react"
 import { TodayHabits } from "@/components/dashboard/today-habits"
 import { ActiveGoals } from "@/components/dashboard/active-goals"
 import { LearningSummary } from "@/components/dashboard/learning-summary"
@@ -34,13 +36,22 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold tracking-tight text-text">Dashboard</h1>
           <p className="text-text-muted mt-1">{formattedDate}</p>
         </div>
-        <div className="hidden md:block text-right">
-          <p className="text-sm font-medium text-primary">Welcome back</p>
-          <p className="text-xs text-text-muted">
-            {pendingHabits > 0
-              ? `You have ${pendingHabits} habit${pendingHabits === 1 ? '' : 's'} to complete today`
-              : "You've completed all your habits for today! 🎉"}
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="hidden md:block text-right">
+            <p className="text-sm font-medium text-primary">Welcome back</p>
+            <p className="text-xs text-text-muted">
+              {pendingHabits > 0
+                ? `You have ${pendingHabits} habit${pendingHabits === 1 ? '' : 's'} to complete today`
+                : "You've completed all your habits for today! 🎉"}
+            </p>
+          </div>
+          <Link
+            href="/today"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/10 text-blue-400 text-sm font-medium hover:bg-blue-500/20 transition-colors"
+          >
+            <Zap className="h-4 w-4" />
+            Focus Mode
+          </Link>
         </div>
       </div>
 

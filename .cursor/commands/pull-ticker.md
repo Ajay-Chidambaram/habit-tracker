@@ -1,0 +1,1 @@
+Pull the refered ticket details from Jira dashboard
